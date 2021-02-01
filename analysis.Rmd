@@ -1,0 +1,105 @@
+---
+title: "Malignant Melanoma"
+author: "Jonas Hughes Larsen"
+date: "1/31/2021"
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(finalfit)
+library(skimr)
+library(here)
+library(survival)
+library(survminer)
+library(broom)
+library(cmprsk)
+library(patchwork)
+library(knitr)
+library(kableExtra)
+
+source(here("scripts", "data_cleaning.R"))
+
+```
+
+
+## Demographics
+
+```{r echo = FALSE}
+load(here::here("data", "table1.rda"))
+kable(table1, row.names=FALSE, align=c("l", "l", "r", "r", "r", "r")) %>% 
+  kable_styling()
+```
+
+## Logistic Regression 
+
+```{r echo = FALSE, warning = FALSE}
+load(here::here("data", "table_LR.rda"))
+kable(table_LR, row.names=FALSE, align=c("l", "l", "r", "r", "r", "r")) %>% 
+  kable_styling()
+```
+
+
+## Odds ratios
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+explanatory <- c("sex", "age", "thickness", "ulcer")
+
+melanoma %>% 
+  mutate(dead_melanoma_5yr = ff_label(dead_melanoma_5yr, "5-year survival")) %>% 
+  mutate(age = ff_label(age, "Age (years)")) %>% 
+  mutate(sex = ff_label(sex, "Sex")) %>% 
+  mutate(thickness = ff_label(thickness, "Thickness")) %>% 
+  mutate(ulcer = ff_label(ulcer, "Ulcerated tumor")) %>% 
+  or_plot("dead_melanoma_5yr", explanatory, 
+          breaks = c(0.5, 1, 5, 10, 20, 30),
+          table_text_size = 3.5)
+```
+
+## Overall Survival
+
+```{r echo = FALSE, fig.width = 9}
+load(here::here("data", "os_all.rda"))
+os_all
+load(here::here("data", "os_ulcer.rda"))
+os_ulcer
+```
+
+## Disease Specific Survival
+
+```{r echo = FALSE, fig.width = 9}
+load(here::here("data", "dss_all.rda"))
+dss_all
+load(here::here("data", "dss_ulcer.rda"))
+dss_ulcer
+```
+
+## Cox Proportional Hazard Model
+
+```{r echo = FALSE}
+load(here::here("data", "table_cphm.rda"))
+kable(table_cphm, row.names=FALSE, align=c("l", "l", "r", "r", "r", "r")) %>% 
+  kable_styling()
+```
+
+## Hazard ratios
+
+```{r echo = FALSE, warning = FALSE, message = FALSE, fig.width = 9}
+dependent_os  <- "Surv(time, status_os)"
+explanatory   <- c("age", "sex", "thickness", "ulcer")
+
+melanoma %>%
+  mutate(age = ff_label(age, "Age (years)")) %>% 
+  mutate(sex = ff_label(sex, "Sex")) %>% 
+  mutate(thickness = ff_label(thickness, "Thickness")) %>% 
+  mutate(ulcer = ff_label(ulcer, "Ulcerated tumor")) %>% 
+  hr_plot(dependent_os, explanatory)
+```
+
+## Competing Risk
+
+```{r echo = FALSE}
+load(here::here("data", "table_competingrisk.rda"))
+kable(table_competingrisk, row.names=FALSE, align=c("l", "l", "r", "r", "r", "r")) %>% 
+  kable_styling()
+```
+
