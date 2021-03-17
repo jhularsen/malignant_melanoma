@@ -1,6 +1,7 @@
 # Packages ----------------------------------------------------------------
 
 library(tidyverse)
+library(tidymodels)
 library(finalfit)
 library(skimr)
 library(here)

@@ -10,6 +10,8 @@ melanoma <- raw_melanoma %>%
            fct_recode("dead_melanoma" = "1", 
                       "alive" = "2", 
                       "dead_other" = "3")) %>% 
+  mutate(age_group = if_else(age > 65, "old", 
+                             "young")) %>% 
   mutate(sex = 
            sex %>% 
            factor() %>% 

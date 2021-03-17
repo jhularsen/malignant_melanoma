@@ -110,6 +110,39 @@ explanatory <- c("age", "sex", "ulcer", "thickness",
 melanoma %>% 
   finalfit(dependent_os, explanatory)
 
+#Bootstrap confidence intervals using rsample package
+coxph_intervals <- reg_intervals(Surv(time, status_os) ~ age + sex + thickness + ulcer, 
+                                 data = melanoma, 
+                                 type = "percentile", 
+                                 keep_reps = TRUE, 
+                                 model_fn = "coxph")
+
+save(coxph_intervals, file = here("data", "coxph_intervals.rda"))
+
+coxph_bootstrap_intervals <- coxph_intervals %>%
+  mutate(term = fct_reorder(term, exp(.estimate))) %>%
+  ggplot(aes(exp(.estimate), term)) +
+  geom_vline(xintercept = 1, size = 1.5, lty = 2, color = "gray80") +
+  geom_errorbarh(aes(xmin = exp(.lower), xmax = exp(.upper)),
+                 size = 1.5, alpha = 0.5, color = "midnightblue") +
+  geom_point(size = 3, color = "midnightblue") +
+  labs(x = "Hazard ratio (95% CI)", y = NULL) +
+  theme_minimal()
+
+save(coxph_bootstrap_intervals, file = here("data", "coxph_bootstrap_intervals.rda"))
+
+coxph_bootstrap_distributions <- coxph_intervals %>%
+  mutate(term = fct_reorder(term, exp(.estimate))) %>%
+  unnest(.replicates) %>%
+  ggplot(aes(exp(estimate), fill = term)) +
+  geom_vline(xintercept = 1, size = 1.2, lty = 2, color = "gray50") +
+  geom_histogram(alpha = 0.8, show.legend = FALSE, binwidth = 0.05) +
+  facet_wrap(vars(term)) + 
+  labs(x = "Hazard ratio") + 
+  theme_minimal()
+
+save(coxph_bootstrap_distributions, file = here("data", "coxph_bootstrap_distributions.rda"))
+
 
 #Competing risk regression
 explanatory   <- c("age", "sex", "thickness", "ulcer")

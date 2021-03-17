@@ -6,6 +6,7 @@ date: "1/31/2021"
 
 ```{r setup, include=FALSE}
 library(tidyverse)
+library(tidymodels)
 library(finalfit)
 library(skimr)
 library(here)
@@ -93,6 +94,18 @@ melanoma %>%
   mutate(thickness = ff_label(thickness, "Thickness")) %>% 
   mutate(ulcer = ff_label(ulcer, "Ulcerated tumor")) %>% 
   hr_plot(dependent_os, explanatory)
+```
+
+## Bootstrap confidence intervals using rsample package
+
+```{r echo = FALSE, warning = FALSE, message = FALSE, fig.width = 9}
+load(here::here("data", "coxph_bootstrap_intervals.rda"))
+coxph_bootstrap_intervals
+```
+
+```{r echo = FALSE, warning = FALSE, message = FALSE, fig.width = 9}
+load(here::here("data", "coxph_bootstrap_distributions.rda"))
+coxph_bootstrap_distributions
 ```
 
 ## Competing Risk
